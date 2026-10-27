@@ -4,9 +4,8 @@ import { api_base } from '@/external/bot-skeleton/services/api/api-base';
 import { useApiBase } from '@/hooks/useApiBase';
 import useIsTNCNeeded from '@/hooks/useIsTNCNeeded';
 import { useStore } from '@/hooks/useStore';
-import { Button, Link, Text } from '@deriv-com/quill-ui';
 import { Localize } from '@deriv-com/translations';
-import { useDevice } from '@deriv-com/ui';
+import { Button, Text, useDevice } from '@deriv-com/ui';
 import Modal from '../shared_ui/modal';
 import './tnc-status-update-modal.scss';
 
@@ -30,7 +29,7 @@ const TncStatusUpdateModal: React.FC = observer(() => {
         if (isAuthorized) {
             await api_base.api.send({ tnc_approval: 1 });
             if (client.landing_company_shortcode) {
-                client.updateTncStatus(client.landing_company_shortcode, 1);
+                (client.updateTncStatus as any)(client.landing_company_shortcode, 1);
             }
             setIsTncOpen(false);
         }
@@ -43,16 +42,14 @@ const TncStatusUpdateModal: React.FC = observer(() => {
     return (
         <Modal className='tnc-status-update-modal-wrapper' is_open={is_tnc_open} has_close_icon={false} width='44rem'>
             <div className='tnc-status-update-modal'>
-                <Text size={isDesktop ? 'sm' : 'md'} bold>
+                <Text size={isDesktop ? 'sm' : 'md'} weight='bold'>
                     <Localize i18n_default_text="Updated T&C's" />
                 </Text>
                 <div className='tnc-status-update-modal__text-container'>
                     <Text size={isDesktop ? 'sm' : 'md'}>
                         <Localize
                             i18n_default_text='Please review our updated <0>terms and conditions</0>.'
-                            components={[
-                                <Link className='tnc-link' key={0} size={isDesktop ? 'sm' : 'md'} href={tncLink} />,
-                            ]}
+                            components={[<a className='tnc-link' key={0} href={tncLink} target='_blank' rel='noreferrer' />]}
                         />
                     </Text>
                     <Text size={isDesktop ? 'sm' : 'md'}>
@@ -60,12 +57,9 @@ const TncStatusUpdateModal: React.FC = observer(() => {
                     </Text>
                 </div>
                 <div className='tnc-status-update-modal__button'>
-                    <Button
-                        onClick={onClick}
-                        size='md'
-                        variant='primary'
-                        label={<Localize i18n_default_text='Continue' />}
-                    />
+                    <Button onClick={onClick} size='md' variant='primary'>
+                        <Localize i18n_default_text='Continue' />
+                    </Button>
                 </div>
             </div>
         </Modal>

@@ -8,9 +8,11 @@ export default defineConfig({
     plugins: [
         pluginSass({
             sassLoaderOptions: {
-                sourceMap: true,
+                sourceMap: false,
                 sassOptions: {
-                    // includePaths: [path.resolve(__dirname, 'src')],
+                    includePaths: [path.resolve(__dirname, 'src')],
+                    loadPaths: [path.resolve(__dirname, 'src')],
+                    quietDeps: true,
                 },
                 // additionalData: `@use "${path.resolve(__dirname, 'src/components/shared/styles')}" as *;`,
             },
@@ -43,30 +45,36 @@ export default defineConfig({
                 GROWTHBOOK_DECRYPTION_KEY: JSON.stringify(process.env.GROWTHBOOK_DECRYPTION_KEY),
             },
         },
+    },
+    resolve: {
         alias: {
             react: path.resolve('./node_modules/react'),
             'react-dom': path.resolve('./node_modules/react-dom'),
+            components: path.resolve(__dirname, './src/components'),
             '@/external': path.resolve(__dirname, './src/external'),
             '@/components': path.resolve(__dirname, './src/components'),
             '@/hooks': path.resolve(__dirname, './src/hooks'),
             '@/utils': path.resolve(__dirname, './src/utils'),
             '@/constants': path.resolve(__dirname, './src/constants'),
             '@/stores': path.resolve(__dirname, './src/stores'),
+            '@/pages': path.resolve(__dirname, './src/pages'),
+            '@/types': path.resolve(__dirname, './src/types'),
+            '@/analytics': path.resolve(__dirname, './src/analytics'),
         },
     },
     output: {
+        sourceMap: {
+            js: false,
+            css: false,
+        },
+        legalComments: 'none',
         copy: [
             {
-                from: 'node_modules/@deriv/deriv-charts/dist/*',
-                to: 'js/smartcharts/[name][ext]',
+                from: path.join(__dirname, 'public'),
                 globOptions: {
-                    ignore: ['**/*.LICENSE.txt'],
+                    ignore: ['**/NOTICES', '**/*.LICENSE.txt', '**/*.map'],
                 },
             },
-            { from: 'node_modules/@deriv/deriv-charts/dist/chart/assets/*', to: 'assets/[name][ext]' },
-            { from: 'node_modules/@deriv/deriv-charts/dist/chart/assets/fonts/*', to: 'assets/fonts/[name][ext]' },
-            { from: 'node_modules/@deriv/deriv-charts/dist/chart/assets/shaders/*', to: 'assets/shaders/[name][ext]' },
-            { from: path.join(__dirname, 'public') },
         ],
         // Ensure service worker is not cached by the browser
         filename: {
@@ -83,7 +91,7 @@ export default defineConfig({
         template: './index.html',
     },
     server: {
-        port: 5000,
+        port: 3000,
         host: '0.0.0.0',
         compress: true,
         headers: {
@@ -93,7 +101,8 @@ export default defineConfig({
         },
     },
     dev: {
-        hmr: true,
+        hmr: false,
+        liveReload: false,
     },
     tools: {
         rspack: {

@@ -1,17 +1,19 @@
-import React from 'react';
-import debounce from 'debounce';
+import { useEffect, useState } from 'react';
 
-export const useDebounce = (callback: () => void, timeout: number) => {
-    const debouncedCallback = React.useMemo(
-        () => debounce(callback, timeout),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        []
-    );
+export const useDebounce = <T>(value: T, delay: number): T => {
+    const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
-    React.useEffect(() => {
-        return debouncedCallback.cancel;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
 
-    return debouncedCallback;
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [value, delay]);
+
+    return debouncedValue;
 };
+
+export default useDebounce;

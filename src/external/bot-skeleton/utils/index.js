@@ -1,15 +1,18 @@
-export { setColors } from '../scratch/hooks/colours';
-export { getContractTypeName } from './contract';
-export { timeSince } from './date-time-helper';
-export { createError, trackAndEmitError } from './error';
-export { handleError, initErrorHandlingListener, removeErrorHandlingEventListener } from './error-handling';
-export { importExternal } from './html-helper';
-export {
-    convertStrategyToIsDbot,
-    getSavedWorkspaces,
-    removeExistingWorkspace,
-    saveWorkspaceToRecent,
-} from './local-storage';
-export { observer } from './observer';
-export { compareXml, extractBlocksFromXml, pipe, sortBlockChild } from './strategy-helper';
-export { onWorkspaceResize } from './workspace';
+export * from './workspace';
+
+export const observer = {
+    register: () => {},
+    unregister: () => {},
+    emit: () => {},
+};
+
+export const timeSince = (timestamp) => {
+    if (!timestamp) return '';
+    const seconds = Math.floor((Date.now() - timestamp) / 1000);
+    if (seconds < 60) return `${Math.max(0, seconds)}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+};

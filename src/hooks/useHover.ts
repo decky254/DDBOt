@@ -1,66 +1,31 @@
-import React, { RefObject } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
-export const useHover = <T extends HTMLElement | SVGSVGElement>(
-    refSetter?: RefObject<T> | null,
-    should_prevent_bubbling?: boolean
-) => {
-    const [value, setValue] = React.useState(false);
-    const default_ref = React.useRef(null);
-    const ref = refSetter || default_ref;
+export const useHover = <T extends HTMLElement = any>(targetRef?: any, flag?: boolean) => {
+    const [isHovered, setIsHovered] = useState(false);
+    const ref = useRef<T>(null);
 
-    const handleHoverBegin = () => setValue(true);
-    const handleHoverFinish = () => setValue(false);
-
-    React.useEffect(() => {
-        const node = ref.current;
+    useEffect(() => {
+        const node = targetRef?.current || ref.current;
         if (node) {
-            if (should_prevent_bubbling) {
-                node.addEventListener('mouseenter', handleHoverBegin);
-                node.addEventListener('mouseleave', handleHoverFinish);
-            } else {
-                node.addEventListener('mouseover', handleHoverBegin);
-                node.addEventListener('mouseout', handleHoverFinish);
-            }
+            const handleMouseEnter = () => setIsHovered(true);
+            const handleMouseLeave = () => setIsHovered(false);
+
+            node.addEventListener('mouseenter', handleMouseEnter);
+            node.addEventListener('mouseleave', handleMouseLeave);
 
             return () => {
-                if (should_prevent_bubbling) {
-                    node.removeEventListener('mouseenter', handleHoverBegin);
-                    node.removeEventListener('mouseleave', handleHoverFinish);
-                } else {
-                    node.removeEventListener('mouseover', handleHoverBegin);
-                    node.removeEventListener('mouseout', handleHoverFinish);
-                }
+                node.removeEventListener('mouseenter', handleMouseEnter);
+                node.removeEventListener('mouseleave', handleMouseLeave);
             };
         }
-        return undefined;
-    }, [ref, should_prevent_bubbling]);
+    }, [ref, targetRef]);
 
-    return [ref, value] as const;
+    return [targetRef || ref, isHovered] as const;
 };
 
 export const useHoverCallback = () => {
-    const [value, setValue] = React.useState(false);
-
-    const handleMouseOver = React.useCallback(() => setValue(true), []);
-    const handleMouseOut = React.useCallback(() => setValue(false), []);
-    const ref = React.useRef<HTMLElement | null>(null);
-
-    const callbackRef = React.useCallback(
-        (node: HTMLElement) => {
-            if (ref.current) {
-                ref.current.removeEventListener('mouseover', handleMouseOver);
-                ref.current.removeEventListener('mouseout', handleMouseOut);
-            }
-
-            ref.current = node;
-
-            if (ref.current) {
-                ref.current.addEventListener('mouseover', handleMouseOver);
-                ref.current.addEventListener('mouseout', handleMouseOut);
-            }
-        },
-        [handleMouseOver, handleMouseOut]
-    );
-
-    return [callbackRef, value];
+    const ref = useRef<any>(null);
+    return [ref, false] as const;
 };
+
+export default useHover;

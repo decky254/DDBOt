@@ -1,0 +1,6 @@
+{
+  "name": "Deriv Bot",
+  "description": "Build a trading bot without coding",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

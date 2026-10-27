@@ -1,33 +1,22 @@
 import { useEffect, useState } from 'react';
 
-/**
- * Retrieves the current online status of the browser.
- * @returns {boolean} The online status of the browser.
- */
-const getOnlineStatus = () =>
-    typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean' ? navigator.onLine : true;
-
-/**
- * A custom React hook that tracks the online status of the browser.
- * @returns {boolean} The current online status of the browser.
- */
-const useNavigatorOnline = () => {
-    const [status, setStatus] = useState(getOnlineStatus());
-
-    const setOnline = () => setStatus(true);
-    const setOffline = () => setStatus(false);
+export const useNavigatorOnline = () => {
+    const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
     useEffect(() => {
-        window.addEventListener('online', setOnline);
-        window.addEventListener('offline', setOffline);
+        const handleOnline = () => setIsOnline(true);
+        const handleOffline = () => setIsOnline(false);
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
 
         return () => {
-            window.removeEventListener('online', setOnline);
-            window.removeEventListener('offline', setOffline);
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
         };
     }, []);
 
-    return status;
+    return isOnline;
 };
 
 export default useNavigatorOnline;

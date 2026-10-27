@@ -1,9 +1,10 @@
-import React from 'react';
+import { useRef } from 'react';
 
-export const useConstructor = (callBack: () => void = () => undefined) => {
-    const is_called_ref = React.useRef(false);
-    if (!is_called_ref.current) {
-        callBack();
-        is_called_ref.current = true;
-    }
+export const useConstructor = (callBack: () => void = () => {}) => {
+    const hasBeenCalled = useRef(false);
+    if (hasBeenCalled.current) return;
+    callBack();
+    hasBeenCalled.current = true;
 };
+
+export default useConstructor;

@@ -111,11 +111,14 @@ const Tabs = ({
     const [active_tab_index, setActiveTabIndex] = React.useState(initial_index_to_show);
 
     React.useEffect(() => {
-        if (active_tab_index >= 0 && active_index !== active_tab_index) {
-            onTabItemClick?.(active_tab_index);
-        }
         setActiveLineStyle();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        if (active_tab_ref.current && typeof active_tab_ref.current.scrollIntoView === 'function') {
+            active_tab_ref.current.scrollIntoView({
+                behavior: 'smooth',
+                inline: 'center',
+                block: 'nearest',
+            });
+        }
     }, [active_tab_index, setActiveLineStyle]);
 
     React.useEffect(() => {
@@ -131,6 +134,7 @@ const Tabs = ({
             pushHash(hash);
         }
         setActiveTabIndex(index);
+        onTabItemClick?.(index);
         setActiveLineStyle();
     };
 
@@ -185,7 +189,7 @@ const Tabs = ({
                                     icon_color={icon_color}
                                     icon_size={icon_size}
                                     is_active={index === active_tab_index}
-                                    key={label}
+                                    key={id || index}
                                     is_label_hidden={children.length === 1 && single_tab_has_no_label}
                                     label={label}
                                     id={id}

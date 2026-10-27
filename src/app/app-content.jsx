@@ -20,8 +20,6 @@ import useThemeSwitcher from '@/hooks/useThemeSwitcher';
 import useTrackjs from '@/hooks/useTrackjs';
 import initDatadog from '@/utils/datadog';
 import initHotjar from '@/utils/hotjar';
-import { setSmartChartsPublicPath } from '@deriv/deriv-charts';
-import { ThemeProvider } from '@deriv-com/quill-ui';
 import { localize } from '@deriv-com/translations';
 import Audio from '../components/audio';
 import BlocklyLoading from '../components/blockly-loading';
@@ -157,10 +155,6 @@ const AppContent = observer(() => {
     );
 
     React.useEffect(() => {
-        setSmartChartsPublicPath(getUrlBase('/js/smartcharts/'));
-    }, []);
-
-    React.useEffect(() => {
         // Check if api is initialized and then subscribe to the api messages
         // Also we should only subscribe to the messages once user is logged in
         // And is not already subscribed to the messages
@@ -283,7 +277,7 @@ const AppContent = observer(() => {
         console.log('[Offline] Bypassing loader, showing dashboard directly');
         return (
             <AuthLoadingWrapper>
-                <ThemeProvider theme={is_dark_mode_on ? 'dark' : 'light'}>
+                <div data-theme={is_dark_mode_on ? 'dark' : 'light'}>
                     <BlocklyLoading />
                     <div className='bot-dashboard bot' data-testid='dt_bot_dashboard'>
                         {/* <PWAInstallModalTest /> */}
@@ -296,7 +290,7 @@ const AppContent = observer(() => {
                         <ToastContainer limit={3} draggable={false} />
                         <TncStatusUpdateModal />
                     </div>
-                </ThemeProvider>
+                </div>
             </AuthLoadingWrapper>
         );
     }
@@ -305,7 +299,7 @@ const AppContent = observer(() => {
         <ChunkLoader message={getLoadingMessage()} />
     ) : (
         <AuthLoadingWrapper>
-            <ThemeProvider theme={is_dark_mode_on ? 'dark' : 'light'}>
+            <div data-theme={is_dark_mode_on ? 'dark' : 'light'}>
                 <BlocklyLoading />
                 <div className='bot-dashboard bot' data-testid='dt_bot_dashboard'>
                     {/* <PWAInstallModalTest /> */}
@@ -318,7 +312,7 @@ const AppContent = observer(() => {
                     <ToastContainer limit={3} draggable={false} />
                     <TncStatusUpdateModal />
                 </div>
-            </ThemeProvider>
+            </div>
         </AuthLoadingWrapper>
     );
 });

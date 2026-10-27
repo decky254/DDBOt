@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import PWAInstallButton from '@/components/pwa-install-button';
-import { generateOAuthURL, standalone_routes } from '@/components/shared';
+import { standalone_routes } from '@/components/shared';
 import Button from '@/components/shared_ui/button';
 import useActiveAccount from '@/hooks/api/account/useActiveAccount';
 import { useOauth2 } from '@/hooks/auth/useOauth2';
@@ -10,9 +10,8 @@ import { useFirebaseCountriesConfig } from '@/hooks/firebase/useFirebaseCountrie
 import { useApiBase } from '@/hooks/useApiBase';
 import { useStore } from '@/hooks/useStore';
 import useTMB from '@/hooks/useTMB';
-import { clearAuthData, handleOidcAuthFailure } from '@/utils/auth-utils';
+import { clearAuthData } from '@/utils/auth-utils';
 import { StandaloneCircleUserRegularIcon } from '@deriv/quill-icons/Standalone';
-import { requestOidcAuthentication } from '@deriv-com/auth-client';
 import { Localize, useTranslations } from '@deriv-com/translations';
 import { Header, useDevice, Wrapper } from '@deriv-com/ui';
 import { Tooltip } from '@deriv-com/ui';
@@ -63,19 +62,8 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
                                 has_effect
                                 text={localize('Manage funds')}
                                 onClick={() => {
-                                    let redirect_url = new URL(standalone_routes.wallets_transfer);
-                                    const is_hub_enabled_country = hubEnabledCountryList.includes(
-                                        client?.residence || ''
-                                    );
-                                    if (is_hub_enabled_country) {
-                                        redirect_url = new URL(standalone_routes.recent_transactions);
-                                    }
-                                    if (is_virtual) {
-                                        redirect_url.searchParams.set('account', 'demo');
-                                    } else if (currency) {
-                                        redirect_url.searchParams.set('account', currency);
-                                    }
-                                    window.location.assign(redirect_url.toString());
+                                    const currentBal = Number(client?.balance || 10000);
+                                    client?.setBalance?.((currentBal + 1000).toFixed(2));
                                 }}
                                 primary
                             />
@@ -83,11 +71,8 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
                             <Button
                                 primary
                                 onClick={() => {
-                                    const redirect_url = new URL(standalone_routes.cashier_deposit);
-                                    if (currency) {
-                                        redirect_url.searchParams.set('account', currency);
-                                    }
-                                    window.location.assign(redirect_url.toString());
+                                    const currentBal = Number(client?.balance || 10000);
+                                    client?.setBalance?.((currentBal + 1000).toFixed(2));
                                 }}
                                 className='deposit-button'
                             >
@@ -120,9 +105,11 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
                             }
                             return (
                                 <Tooltip
-                                    as='a'
-                                    href={redirect_url.toString()}
-                                    tooltipContent={localize('Manage account settings')}
+                                    as='button'
+                                    onClick={() => {
+                                        client?.logout?.();
+                                    }}
+                                    tooltipContent={localize('Log out / Manage account')}
                                     tooltipPosition='bottom'
                                     className='app-header__account-settings'
                                 >
@@ -140,37 +127,19 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
                         onClick={async () => {
                             clearAuthData(false);
                             const getQueryParams = new URLSearchParams(window.location.search);
-                            const currency = getQueryParams.get('account') ?? '';
+                            const queryCurrency = getQueryParams.get('account') ?? '';
                             const query_param_currency =
-                                currency || sessionStorage.getItem('query_param_currency') || 'USD';
+                                queryCurrency || sessionStorage.getItem('query_param_currency') || 'USD';
 
-                            try {
-                                // First, explicitly wait for TMB status to be determined
-                                const tmbEnabled = await isTmbEnabled();
-                                // Now use the result of the explicit check
-                                if (tmbEnabled) {
-                                    await onRenderTMBCheck(true); // Pass true to indicate it's from login button
-                                } else {
-                                    // Always use OIDC if TMB is not enabled
-                                    try {
-                                        await requestOidcAuthentication({
-                                            redirectCallbackUri: `${window.location.origin}/callback`,
-                                            ...(query_param_currency
-                                                ? {
-                                                      state: {
-                                                          account: query_param_currency,
-                                                      },
-                                                  }
-                                                : {}),
-                                        });
-                                    } catch (err) {
-                                        handleOidcAuthFailure(err);
-                                        window.location.replace(generateOAuthURL());
-                                    }
-                                }
-                            } catch (error) {
-                                // eslint-disable-next-line no-console
-                                console.error(error);
+                            if (query_param_currency) {
+                                sessionStorage.setItem('query_param_currency', query_param_currency);
+                            }
+
+                            const tmbEnabled = await isTmbEnabled();
+                            if (tmbEnabled) {
+                                await onRenderTMBCheck(true);
+                            } else {
+                                client?.loginDemoAccount?.();
                             }
                         }}
                     >
@@ -179,7 +148,7 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
                     <Button
                         primary
                         onClick={() => {
-                            window.open(standalone_routes.signup);
+                            client?.loginDemoAccount?.();
                         }}
                     >
                         <Localize i18n_default_text='Sign up' />
